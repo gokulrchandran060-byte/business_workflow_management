@@ -44,6 +44,12 @@ class TaskDetailAPIView(APIView):
         return Response(serializer.data)
 
     def delete(self, request, pk):
-        task = get_object_or_404(Task, pk=pk)
-        task.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+     if not Task.objects.filter(id=pk).exists():
+        return Response(
+            {"detail": "Task not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+     Task.objects.filter(id=pk).delete()
+     return Response(status=status.HTTP_204_NO_CONTENT)
+
