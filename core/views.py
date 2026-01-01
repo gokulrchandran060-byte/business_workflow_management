@@ -13,9 +13,18 @@ from .serializers import TaskSerializer
 class TaskListCreateAPIView(APIView):
 
     def get(self, request):
-        tasks = Task.objects.all()
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
+     status_param = request.query_params.get("status")
+
+     qs = Task.objects.all()
+
+     if status_param:
+         qs = qs.filter(status=status_param)
+
+     qs = qs.order_by("-created_at")
+
+     serializer = TaskSerializer(qs, many=True)
+     return Response(serializer.data)
+
 
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
