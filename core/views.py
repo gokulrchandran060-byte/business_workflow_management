@@ -8,6 +8,11 @@ from django.shortcuts import get_object_or_404
 
 from .models import Task
 from .serializers import TaskSerializer
+from .services.task_workflow import (
+    change_task_status,
+    InvalidStatusTransition
+)
+from .serializers import TaskStatusUpdateSerializer
 
 
 class TaskListCreateAPIView(APIView):
@@ -53,3 +58,23 @@ class TaskDetailAPIView(APIView):
      Task.objects.filter(id=pk).delete()
      return Response(status=status.HTTP_204_NO_CONTENT)
 
+class TaskStatusUpdateAPIView(APIView):
+
+    def patch(self, request, pk):
+        task = get_object_or_404(Task, pk=pk)
+
+        serializer = TaskStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            change_task_status(
+                task,
+                serializer.validated_data["status"]
+            )
+        except InvalidStatusTransition as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response(TaskSerializer(task).data)

@@ -19,3 +19,8 @@ class TaskSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+class TaskStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(
+        choices=Task.STATUS_CHOICES
+    )
